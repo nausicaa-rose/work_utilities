@@ -85,6 +85,21 @@ def change_format_extent_number(new_number):
     format_extent_number_field.send_keys(new_number)
     
     return format_extent_number_field
+
+def change_description(func):
+    """
+    Accepts a function to make changes to description text and assigns
+    the string returned by that function to new_description.
+    """
+    return_elem_xpath = '//input[@id="__wdzf-title"]'
+    return_elem = driver.find_element_by_xpath(return_elem_xpath)
+    description_xpath = '//textarea[@id="__wdzf-description"]'
+    description_elem = driver.find_element_by_xpath(description_xpath)
+    new_description = func(description_elem.text)
+    description_elem.clear()
+    description_elem.send_keys(new_description)
+    
+    return return_elem
     
 # DELETE functions
 
@@ -143,25 +158,20 @@ def load_page(kind=None, doc_id=None):
     else:
         driver.get(base_url)
 
-"""
-This save method is unreliable because scroll_to(save_btn doesn't always work)
-even if used more than once.
-    
-def save_a():
-    save_xpath = '//button[@form="documents"]'
-    save_btn = driver.find_element_by_xpath(save_xpath)
-    
-    scroll_to(save_btn)
-    scroll_to(save_btn)
-    ActionChains(driver).move_to_element(save_btn).click(save_btn).perform()
-"""
-    
+  
 def save(elem):
-    """A quirk of the avIAn website is that hitting the Enter key submits 
-    the form, regardless of what field has focus, which turns out to be good
-    since scrolling to the save button can be unreliable."""
-    #save_xpath = '//div[@class="container"]'
-    #save_elem = driver.find_element_by_xpath(save_xpath)
+    """
+    A quirk of the avIAn website is that sending the Enter key to most
+    fields will submit the form. This is good since a quirk of Selenium, at 
+    least with geckodriver, is that scrolling up to the save button is 
+    unreliable.
+    
+    This function accepts an element as an argument and sends the Return key 
+    signal to it, saving any changes to the document to the database. Each
+    function returns an element that will save the document when sent the 
+    Return signal. Generally, you will want to pass this function the last
+    element returned."""
+
     elem.send_keys(Keys.RETURN)
 
 
