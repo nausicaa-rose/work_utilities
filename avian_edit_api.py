@@ -17,50 +17,6 @@ driver = webdriver.Firefox()
 # page's scripts to populate the HTML form elements
 driver.implicitly_wait(10)
 
-"""
-def get_title(doc_ids):
-    output = []
-    title_xpath = '//h1'
-    for doc in doc_ids:
-        driver.get(doc_url.format(doc))
-        title = driver.find_element_by_xpath(title_xpath).text
-        output.append(title)
-    
-    return output
-
-def get_description(doc_ids):
-    output = []
-    desc_xpath  = '//th[text()="Description"]/following-sibling::td'
-    for doc in doc_ids:
-        driver.get(doc_url.format(doc))
-        desc = driver.find_element_by_xpath(desc_xpath).text
-        output.append(desc)
-
-    return output
-
-def get_occurrence_remarks(doc_ids):
-    output = []
-    or_xpath = '//th[text()="Occurrence Remarks"]/following-sibling::td'
-    for doc in doc_ids:
-        driver.get(doc_url.format(doc))
-        occ_rem = driver.find_element_by_xpath(or_xpath).text
-        output.append(occ_rem)
-
-    return output
-
-def get_title_description_and_occurrence_remarks(doc_ids):
-    output = []
-    for doc in doc_ids:
-        driver.get(doc_url.format(doc))
-        title = get_title(doc, doc)[0]
-        description = get_description(doc, doc)[0]
-        occurrence_remarks = get_occurrence_remarks(doc, doc)[0]
-        output.append(','.join([title, description, occurrence_remarks]))
-
-    return output
-"""
-
-
 # ADD functions
 def _add_access_point(field, ap):
     """
