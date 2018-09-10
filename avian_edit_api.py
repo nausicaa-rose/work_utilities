@@ -1,3 +1,8 @@
+"""
+This 'API' should be considered highly unstable and subject to change
+without notice.
+"""
+
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -57,26 +62,40 @@ def get_title_description_and_occurrence_remarks(doc_ids):
 
 
 # ADD functions
-    
-def add_creator(creator):
+def _add_access_point(field, ap):
     """
     The Selenium window must be in focus in the window manager for this function to work. 
     Otherwise, the suggestion will not appear, and the tab key will not select the first item
     in the suggestions. Most of this function is a kludge to work around the hard-to-automate
     avIAn interface or the Selenium/Firefox driver's inablity to move to an item that isn't within
     the current viewport and Selenium's lack of a scroll function.
+    
+    It appears this function may not work properly unless it is the final edit made on a page.
     """
-    creator_xpath = '//input[@id="__wdzf-creators"]'
-    creator_field = driver.find_element_by_xpath(creator_xpath)
-    scroll_to(creator_field)
-    ActionChains(driver).move_to_element(creator_field).click(creator_field).perform()
-    creator_field.send_keys(creator[:-1])
-    # Pause to give the Creator field time to auto-populate
+    return_elem_xpath = f'//input[@id="{field}"]'
+    return_elem = driver.find_element_by_xpath(return_elem_xpath)
+    scroll_to(return_elem)
+    ActionChains(driver).move_to_element(return_elem).click(return_elem).perform()
+    # Send less than the full string to prompt suggestions
+    return_elem.send_keys(ap[:-1])
+    # Pause to give the Creator field time to auto-populate suggestions
     time.sleep(2)
-    creator_field.send_keys(Keys.TAB)
+    # Select the top option out of suggestions
+    return_elem.send_keys(Keys.TAB)
     
-    return creator_field
-    
+    return return_elem
+
+
+def add_genre(genre):
+    field = '__wdzf-genres'
+    return _add_access_point(field, genre)
+
+
+def add_creator(creator):
+    field = '__wdzf-creators'
+    return _add_access_point(field, creator)
+
+
 # CHANGE functions
 def change_format_extent_number(new_number):
     format_extent_number_xpath = '//input[@name="extent"]'
@@ -86,49 +105,58 @@ def change_format_extent_number(new_number):
     
     return format_extent_number_field
 
-def change_description(func):
+
+def change_description(func, *args):
     """
     Accepts a function to make changes to description text and assigns
-    the string returned by that function to new_description.
+    the string returned by that function to new_description. All such
+    functions are passed the content of the description textbox. They
+    may be passed additional arguments via *args.
     """
     return_elem_xpath = '//input[@id="__wdzf-title"]'
     return_elem = driver.find_element_by_xpath(return_elem_xpath)
     description_xpath = '//textarea[@id="__wdzf-description"]'
     description_elem = driver.find_element_by_xpath(description_xpath)
-    new_description = func(description_elem.text)
+    new_description = func(description_elem.text, *args)  
     description_elem.clear()
     description_elem.send_keys(new_description)
     
     return return_elem
-    
-# DELETE functions
 
-def remove_contributor(contrib):
-    return_elem_xpath = '//input[@id="__wdzf-contributors"]'
+ 
+# DELETE functions
+def _delete_access_point(field, ap):
+    field_row = field[:6] + '-row' + field[6:]
+    return_elem_xpath = f'//input[@id="{field}"]'
     return_elem = driver.find_element_by_xpath(return_elem_xpath)
-    delete_xpath = f'//div[@id="__wdzf-row-contributors"]//a[text()="{contrib}"]/following-sibling::a'
-    delete_btn = driver.find_element_by_xpath(delete_xpath)
-    scroll_to(delete_btn)
-    ActionChains(driver).move_to_element(delete_btn).click(delete_btn).perform()
+    ap_delete_btn_xpath = f'//div[@id="{field_row}"]//a[text()="{ap}"]/following-sibling::a'
+    ap_delete_btn = driver.find_element_by_xpath(ap_delete_btn_xpath)
+    scroll_to(ap_delete_btn)
+    ActionChains(driver).move_to_element(ap_delete_btn).click(ap_delete_btn).perform()
     
     return return_elem
+
+
+def delete_contributor(contrib):
+    field = '__wdzf-contributors'
+    return _delete_access_point(field, contrib)
+
     
-def remove_people_org(ppl_org):
-    return_elem_xpath = '//input[@id="__wdzf-people"]'
-    return_elem = driver.find_element_by_xpath(return_elem_xpath)
-    ppl_org_delete_xpath = f'//div[@id="__wdzf-row-people"]//a[text()="{ppl_org}"]/following-sibling::a'
-    ppl_org_delete_btn = driver.find_element_by_xpath(ppl_org_delete_xpath)
-    scroll_to(ppl_org_delete_btn)
-    ActionChains(driver).move_to_element(ppl_org_delete_btn).click(ppl_org_delete_btn).perform()
-    
-    return return_elem
-    
-def remove_access_point(field, match):
-    pass
-    
+def delete_people_org(ppl_org):
+    field = '__wdzf-people'
+    return _delete_access_point(field, ppl_org)
+
+
+def delete_genre(genre):
+    field = '__wdzf-genres'
+    return _delete_access_point(field, genre)
+
+def delete_topic(topic):
+    field = '__wdzf-topics'
+    return _delete_access_point(field, topic)
+
 
 # Utility functions
-
 def login(username, password):
     login_btn_xpath = '//a[@href="/_webdev/auth/login"]'
     
@@ -173,7 +201,6 @@ def save(elem):
     element returned."""
 
     elem.send_keys(Keys.RETURN)
-
 
   
 def scroll_to(element):
