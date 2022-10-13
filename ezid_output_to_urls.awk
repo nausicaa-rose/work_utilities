@@ -1,0 +1,1 @@
+/success: / {print "https://n2t.net/" $2}
